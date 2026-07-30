@@ -8,7 +8,7 @@ public class HelloController {
 
     @GetMapping("/")
     public String hello() {
-        return "Hello from the CI/CD pipeline! Build is live and running in Docker";
+        return "Hello from the CI/CD pipeline! Build is live and running in Docker.";
     }
 
     @GetMapping("/health")

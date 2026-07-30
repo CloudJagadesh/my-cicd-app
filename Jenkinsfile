@@ -13,9 +13,11 @@ pipeline {
     }
 
     stages {
+
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/nikhilirri038/my-cicd-app.git'
+                git branch: 'main',
+                    url: 'https://github.com/nikhilirri038/my-cicd-app.git'
             }
         }
 
@@ -28,7 +30,10 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
-                    sh 'mvn sonar:sonar -Dsonar.projectKey=myapp'
+                    sh '''
+                    mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+                    -Dsonar.projectKey=myapp
+                    '''
                 }
             }
         }
@@ -43,18 +48,30 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t $IMAGE_NAME:latest .'
+                sh 'docker build -t ${IMAGE_NAME}:latest .'
             }
         }
 
         stage('Deploy Container') {
             steps {
                 sh '''
-                    docker stop $CONTAINER_NAME || true
-                    docker rm $CONTAINER_NAME || true
-                    docker run -d --name $CONTAINER_NAME -p $APP_PORT:8080 $IMAGE_NAME:latest
+                docker stop ${CONTAINER_NAME} || true
+                docker rm ${CONTAINER_NAME} || true
+                docker run -d \
+                    --name ${CONTAINER_NAME} \
+                    -p ${APP_PORT}:8080 \
+                    ${IMAGE_NAME}:latest
                 '''
             }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline executed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed.'
         }
     }
 }
